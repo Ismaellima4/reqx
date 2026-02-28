@@ -1,0 +1,44 @@
+# Global variables
+@token = secret-token-123
+@base_url = http://localhost:3000
+
+###
+
+# Simple GET request
+GET {{base_url}}/users
+Accept: application/json
+
+###
+
+# POST request with authentication and body
+POST {{base_url}}/api/users
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "John Doe",
+  "email": "john@example.com"
+}
+
+###
+
+# PUT request with custom headers
+PUT {{base_url}}/api/users/1
+Authorization: Bearer {{token}}
+X-Custom-Header: reqx-is-awesome
+
+{
+  "name": "John Doe Updated"
+}
+
+###
+
+# DELETE request
+DELETE {{base_url}}/api/users/1
+Authorization: Bearer {{token}}
+
+###
+
+# GET request with query parameters and localhost shorthand
+:3000/api/search?q=rust
+Accept: */*
