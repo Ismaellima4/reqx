@@ -103,7 +103,7 @@ The repository is built as a Cargo Workspace separated into 3 main crates to gua
 
 1. **`reqx-core`**: The pure parsing and interpreting engine. It contains the Lexer, Parser, AST, and the generic `HttpClient` trait. It has zero knowledge of networking libraries like `reqwest`.
 2. **`reqx-cli`**: The binary CLI application. It parses terminal arguments using `clap` and implements the HTTP calls dynamically using `reqwest` (rendering beautiful terminal outputs).
-3. **`reqx-examples`**: Contains programmatic usages of the DSL. Want to embed `reqx` into your own application using a custom or mock `HttpClient` instead of `reqwest`? Check out the `main.rs` inside this folder!
+3. **`examples`**: Contains programmatic usages of the DSL. Want to embed `reqx` into your own application using a custom or mock `HttpClient` instead of `reqwest`? Check out the `main.rs` inside this folder!
 
 ---
 
