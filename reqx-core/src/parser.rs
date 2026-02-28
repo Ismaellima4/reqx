@@ -50,11 +50,21 @@ pub fn parse(tokens: Vec<LocatedToken>) -> Result<ReqxFile, String> {
 
     // Parse request blocks
     loop {
-        // Skip blank lines and separators between requests
+        // Skip blank lines, separators, and global variables between requests
         while let Some(lt) = iter.peek() {
             match &lt.token {
                 Token::BlankLine | Token::Separator => {
                     iter.next();
+                }
+                Token::Variable { .. } => {
+                    let lt = iter.next().unwrap();
+                    if let Token::Variable { name, value } = lt.token {
+                        variables.push(Variable {
+                            name,
+                            value,
+                            line: lt.line,
+                        });
+                    }
                 }
                 _ => break,
             }
