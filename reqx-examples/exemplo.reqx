@@ -1,0 +1,8 @@
+# Variáveis globais
+@token = meu-token-secreto
+
+###
+
+# Testar GET simples
+:3000/__rapina/routes
+Accept: application/json

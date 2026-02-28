@@ -1,0 +1,3 @@
+[workspace]
+members = ["reqx-core", "reqx-cli", "reqx-examples"]
+resolver = "2"
