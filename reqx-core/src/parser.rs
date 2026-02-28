@@ -108,7 +108,9 @@ fn parse_method_and_url(
 
     match first_token.token {
         Token::Method(m_str) => {
-            let method = HttpMethod::from_str(&m_str)
+            let method = m_str
+                .parse::<HttpMethod>()
+                .ok()
                 .ok_or_else(|| format!("Line {}: unsupported HTTP method: {}", req_line, m_str))?;
 
             let url_token = iter

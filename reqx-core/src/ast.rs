@@ -1,4 +1,4 @@
-/// AST types for the `.reqx` DSL.
+//! AST types for the `.reqx` DSL.
 
 /// Represents a parsed `.reqx` file.
 #[derive(Debug, Clone)]
@@ -60,18 +60,19 @@ impl std::fmt::Display for HttpMethod {
     }
 }
 
-impl HttpMethod {
-    /// Parse a string into an HttpMethod, case-insensitive.
-    pub fn from_str(s: &str) -> Option<HttpMethod> {
+impl std::str::FromStr for HttpMethod {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s.to_uppercase().as_str() {
-            "GET" => Some(HttpMethod::Get),
-            "POST" => Some(HttpMethod::Post),
-            "PUT" => Some(HttpMethod::Put),
-            "PATCH" => Some(HttpMethod::Patch),
-            "DELETE" => Some(HttpMethod::Delete),
-            "HEAD" => Some(HttpMethod::Head),
-            "OPTIONS" => Some(HttpMethod::Options),
-            _ => None,
+            "GET" => Ok(HttpMethod::Get),
+            "POST" => Ok(HttpMethod::Post),
+            "PUT" => Ok(HttpMethod::Put),
+            "PATCH" => Ok(HttpMethod::Patch),
+            "DELETE" => Ok(HttpMethod::Delete),
+            "HEAD" => Ok(HttpMethod::Head),
+            "OPTIONS" => Ok(HttpMethod::Options),
+            _ => Err(()),
         }
     }
 }

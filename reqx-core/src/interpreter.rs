@@ -43,7 +43,9 @@ pub fn execute<C: HttpClient>(
     };
 
     if let Some(m_str) = method_filter {
-        let target_method = HttpMethod::from_str(&m_str)
+        let target_method = m_str
+            .parse::<HttpMethod>()
+            .ok()
             .ok_or_else(|| format!("Invalid HTTP method filter: {}", m_str))?;
 
         requests_to_run.retain(|(_, req)| req.method == target_method);
@@ -215,7 +217,7 @@ fn execute_request<C: HttpClient>(
 
     if !resp_body.is_empty() {
         // Try to pretty-print JSON
-        if let Ok(json) = serde_json::from_str::<serde_json::Value>(&resp_body) {
+        if let Ok(json) = serde_json::from_str::<serde_json::Value>(resp_body) {
             let pretty = serde_json::to_string_pretty(&json).unwrap_or_else(|_| resp_body.clone());
             println!("  {}", "Response Body:".dimmed());
             for line in pretty.lines() {

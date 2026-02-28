@@ -1,4 +1,4 @@
-/// Lexer (tokenizer) for `.reqx` files.
+//! Lexer (tokenizer) for `.reqx` files.
 
 /// Token types produced by the lexer.
 #[derive(Debug, Clone, PartialEq)]
