@@ -23,6 +23,7 @@ pub struct Request {
     pub url: String,
     pub headers: Vec<Header>,
     pub body: Option<String>,
+    pub extracts: Vec<Variable>,
     pub line: usize,
 }
 

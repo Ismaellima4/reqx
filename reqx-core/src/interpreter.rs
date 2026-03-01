@@ -69,7 +69,7 @@ pub fn execute<C: HttpClient>(
             println!("{} {}", "▸".green(), comment.bold());
         }
 
-        execute_request(client, req, &vars, verbose, dry_run)?;
+        execute_request(client, req, &mut vars, verbose, dry_run)?;
         println!();
     }
 
@@ -131,7 +131,7 @@ fn expand_url(url: &str) -> String {
 fn execute_request<C: HttpClient>(
     client: &C,
     req: &Request,
-    vars: &HashMap<String, String>,
+    vars: &mut HashMap<String, String>,
     verbose: bool,
     dry_run: bool,
 ) -> Result<(), String> {
@@ -216,9 +216,11 @@ fn execute_request<C: HttpClient>(
     let resp_body = &response.body;
 
     if !resp_body.is_empty() {
+        let json_val: Option<serde_json::Value> = serde_json::from_str(resp_body).ok();
+
         // Try to pretty-print JSON
-        if let Ok(json) = serde_json::from_str::<serde_json::Value>(resp_body) {
-            let pretty = serde_json::to_string_pretty(&json).unwrap_or_else(|_| resp_body.clone());
+        if let Some(ref json) = json_val {
+            let pretty = serde_json::to_string_pretty(json).unwrap_or_else(|_| resp_body.clone());
             println!("  {}", "Response Body:".dimmed());
             for line in pretty.lines() {
                 println!("    {}", line);
@@ -238,9 +240,56 @@ fn execute_request<C: HttpClient>(
                 );
             }
         }
+
+        // Handle extractions
+        if !req.extracts.is_empty() {
+            if let Some(json) = json_val {
+                if verbose {
+                    println!("  {}", "Extractions:".dimmed());
+                }
+                for extract in &req.extracts {
+                    let value = resolve_json_path(&json, &extract.value);
+                    if let Some(val_str) = value {
+                        vars.insert(extract.name.clone(), val_str.clone());
+                        if verbose {
+                            println!("    {} = {}", extract.name.cyan(), val_str);
+                        }
+                    } else if verbose {
+                        println!(
+                            "    {} = {}",
+                            extract.name.cyan(),
+                            "null (path not found)".red()
+                        );
+                    }
+                }
+            } else if verbose {
+                println!(
+                    "  {}",
+                    "Extractions skipped: response body is not valid JSON".red()
+                );
+            }
+        }
     }
 
     Ok(())
+}
+
+fn resolve_json_path(json: &serde_json::Value, path: &str) -> Option<String> {
+    let mut current = json;
+    for part in path.split('.') {
+        if part.is_empty() {
+            continue;
+        }
+        current = current.get(part)?;
+    }
+
+    match current {
+        serde_json::Value::String(s) => Some(s.clone()),
+        serde_json::Value::Number(n) => Some(n.to_string()),
+        serde_json::Value::Bool(b) => Some(b.to_string()),
+        serde_json::Value::Null => Some("null".to_string()),
+        _ => Some(current.to_string()),
+    }
 }
 
 #[cfg(test)]

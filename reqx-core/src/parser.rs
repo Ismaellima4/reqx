@@ -57,6 +57,13 @@ pub fn parse(tokens: Vec<LocatedToken>) -> Result<ReqxFile, String> {
                     iter.next();
                 }
                 Token::Variable { .. } => {
+                    // Peek ahead: if it's a variable after several lines,
+                    // or if it's followed by a separator/EOF, it might be a global.
+                    // But if it's immediately after a request, it might be an extraction.
+                    // For now, variables between requests that are NOT followed by
+                    // another request line are treated as globals if they appear
+                    // after a separator.
+
                     let lt = iter.next().unwrap();
                     if let Token::Variable { name, value } = lt.token {
                         variables.push(Variable {
@@ -210,6 +217,31 @@ fn parse_body(iter: &mut std::iter::Peekable<std::vec::IntoIter<LocatedToken>>) 
     }
 }
 
+fn parse_extracts(
+    iter: &mut std::iter::Peekable<std::vec::IntoIter<LocatedToken>>,
+) -> Vec<Variable> {
+    let mut extracts = Vec::new();
+    while let Some(lt) = iter.peek() {
+        match &lt.token {
+            Token::Variable { .. } => {
+                let lt = iter.next().unwrap();
+                if let Token::Variable { name, value } = lt.token {
+                    extracts.push(Variable {
+                        name,
+                        value,
+                        line: lt.line,
+                    });
+                }
+            }
+            Token::BlankLine => {
+                iter.next();
+            }
+            _ => break,
+        }
+    }
+    extracts
+}
+
 fn parse_request(
     iter: &mut std::iter::Peekable<std::vec::IntoIter<LocatedToken>>,
 ) -> Result<Request, String> {
@@ -217,6 +249,7 @@ fn parse_request(
     let (method_opt, url, line) = parse_method_and_url(iter)?;
     let headers = parse_headers(iter);
     let body = parse_body(iter);
+    let extracts = parse_extracts(iter);
 
     let method = method_opt.unwrap_or_else(|| {
         if body.is_some() {
@@ -232,6 +265,7 @@ fn parse_request(
         url,
         headers,
         body,
+        extracts,
         line,
     })
 }

@@ -1,6 +1,18 @@
-# Global variables
-@token = secret-token-123
-@base_url = http://localhost:3000
+@base_url = :3000 # localhost shorthand
+
+
+# Login to obtain the token dynamically
+POST {{base_url}}/api/login
+Content-Type: application/json
+
+{
+  "username": "admin",
+  "password": "password123"
+}
+
+@token = token 
+
+###
 
 ###
 

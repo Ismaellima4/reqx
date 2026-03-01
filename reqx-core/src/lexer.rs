@@ -107,6 +107,10 @@ impl Lexer {
             return Err(format!("Line {}: empty variable name", line));
         }
         let value = line_str[eq_pos + 1..].trim().to_string();
+
+        // If we find a variable, it marks the end of a body (extraction)
+        self.in_body = false;
+
         self.push(Token::Variable { name, value }, line);
         Ok(true)
     }
@@ -187,11 +191,11 @@ impl Lexer {
         if self.try_blank(trimmed, line) {
             return Ok(());
         }
-        if self.in_body {
-            self.push(Token::BodyLine(raw_line.to_string()), line);
+        if self.try_variable(trimmed, line)? {
             return Ok(());
         }
-        if self.try_variable(trimmed, line)? {
+        if self.in_body {
+            self.push(Token::BodyLine(raw_line.to_string()), line);
             return Ok(());
         }
         if self.try_comment(trimmed, line) {
