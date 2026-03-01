@@ -17,7 +17,7 @@ Content-Type: application/json
 ###
 
 # Simple GET request
-GET {{base_url}}/users
+GET {{base_url}}/api/users
 Accept: application/json
 
 ###
